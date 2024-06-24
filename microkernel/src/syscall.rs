@@ -84,75 +84,30 @@ impl MicroKernelTask {
         flags: IPCFlags,
     ) -> SysResult {
         log::trace!("task {} send {:?} to {}", self.tid, message, dst);
-        // 不能给自己发送 IPC
-        if dst == self.tid {
-            return Err(SysCallError::InvalidArg);
-        }
+		// Lab3 TODO
+        // tips:
+		// 1/不能给自己发送 IPC
 
-        // 获取收信任务
-        let dst = tid2task(dst)
-            .ok_or(SysCallError::InvalidArg)?
-            .downcast_arc::<MicroKernelTask>()
-            .map_err(|_| SysCallError::InvalidArg)?;
+        // 2/获取目标任务dst
 
-        // 判断目的任务是否正在准备接受信息
-        let ready = {
-            let dst_state = dst.state.lock();
-            let dst_wait_for = dst.wait_for.lock();
-            *dst_state == TaskState::Blocked
-                && (*dst_wait_for == Some(IPC_ANY) || *dst_wait_for == Some(self.tid))
-        };
+        // 3/判断目标任务是否正在准备接受信息
 
-        // 如果目的任务并没有处于等待状态
-        if !ready {
-            // 如果 IPC 含有 NON_BLOCK 标志位，则直接返回
-            if flags.contains(IPCFlags::NON_BLOCK) {
-                return Err(SysCallError::WouldBlock);
-            }
+        // 4/如果目标任务并没有处于等待状态
+        // 		4/1如果 IPC 含有 NON_BLOCK 标志位，则直接返回
 
-            // 如果目的任务也在等待给当前任务发送消息，会发生死锁
-            if self
-                .senders
-                .lock()
-                .iter()
-                .find(|x| **x == dst.tid)
-                .is_some()
-            {
-                log::error!("deadlock");
-                return Err(SysCallError::DeadLock);
-            }
+        // 		4/2如果目标任务也在等待给当前任务发送消息，会发生死锁，需要加以检测
 
-            // 将当前任务添加到目的任务的等待列表
-            dst.senders.lock().push(self.tid);
+        // 		4/3将当前任务添加到目标任务的等待列表
 
-            // 阻塞当前任务
-            self.block();
+        // 		4/4阻塞当前任务
 
-            // 等待当前任务恢复
-            WaitResume(self).await;
+        // 		4/5等待当前任务恢复
 
-            // 如果目标任务已经完成
-            if self
-                .notifications
-                .lock()
-                .pop_specify(NotifyEnum::ABORTED)
-                .is_some()
-            {
-                return Err(SysCallError::Aborted);
-            }
-        }
-        // 设置 message 信息
-        let source = if flags.contains(IPCFlags::KERNEL) {
-            FROM_KERNEL
-        } else {
-            self.tid
-        };
-        *dst.message.lock() = Some(Message {
-            source,
-            content: message.content.clone(),
-        });
-        // 恢复 dst 任务运行
-        dst.resume();
+        // 		4/6如果目标任务已经完成，需要相应的处理
+
+        // 5/设置 message 信息
+
+        // 6/恢复 dst 任务运行
         Ok(0)
     }
 
@@ -163,52 +118,24 @@ impl MicroKernelTask {
         message: &mut Message,
         flags: IPCFlags,
     ) -> SysResult {
-        // 如果当前 IPC 是 IPC_ANY 且当前的等待通知集不为空，处理通知
-        if src == IPC_ANY && !self.notifications.lock().is_empty() {
-            message.source = FROM_KERNEL;
-            message.content = MessageContent::NotifyField {
-                notications: self.notifications.lock().pop_all(),
-            };
-            return Ok(0);
-        }
+		// lab3 TODO
+		// tips:
+        // 1/如果当前 IPC 是 IPC_ANY 且当前的等待通知集不为空，处理通知
 
-        // 如果 IPC 含有 NON_BLOCK 标志位，则直接返回
-        if flags.contains(IPCFlags::NON_BLOCK) {
-            return Err(SysCallError::WouldBlock);
-        }
+        // 2/如果 IPC 含有 NON_BLOCK 标志位，则直接返回
 
-        // 查找目标任务
-        let target_tid = self
-            .senders
-            .lock()
-            .iter()
-            .find(|tid| src == IPC_ANY || src == **tid)
-            .cloned();
+        // 3/查找目标任务
 
-        // 恢复目标任务运行
-        if let Some(target_tid) = target_tid {
-            tid2task(target_tid)
-                .expect("can't find sender")
-                .downcast_arc::<MicroKernelTask>()
-                .map_err(|_| SysCallError::InvalidArg)?
-                .resume();
-            // 删除 senders 中的目标任务
-            self.senders.lock().retain(|x| *x != target_tid);
-        }
+        // 4/恢复目标任务运行
 
-        // TIPS: 如果是唤醒了 target_tid 的任务，那么只等待它, 因为那里已经在阻塞了
+        // 5/如果是唤醒了 target_tid 的任务，那么只等待它, 因为那里已经在阻塞了
         // 否则可能出现消息丢失
-        *self.wait_for.lock() = Some(target_tid.unwrap_or(src));
 
-        // 阻塞当前任务
-        self.block();
-        WaitResume(self).await;
+        // 6/阻塞当前任务
 
-        // 清空等待状态
-        *self.wait_for.lock() = None;
+        // 7/清空等待状态
 
-        // 复制消息
-        *message = self.message.lock().clone().unwrap();
+        // 8/复制消息
         Ok(0)
     }
 
