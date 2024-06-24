@@ -56,6 +56,8 @@ pub enum SysCall {
     Shutdown = 17,
     /// 翻译虚拟页表
     TransVAddr = 18,
+	/// 统计系统调用次数
+	CountSysCall = 19,
 }
 
 /// 系统调用的错误
@@ -326,21 +328,23 @@ pub enum MessageContent {
     VmMapPhysicalReplyMsg {
         uaddr: usize,
     },
+	// Lab4 TODO:
     /// 读取块消息
     ReadBlockMsg {
-        block_index: usize,
+		// Lab4 TODO: fill in your arguments
     },
     /// 读取块回复消息
     ReadBlockReplyMsg {
-        buffer: [u8; 0x200],
+        // Lab4 TODO: fill in your arguments
     },
     /// 写块消息
     WriteBlockMsg {
-        block_index: usize,
-        buffer: [u8; 0x200],
+        // Lab4 TODO: fill in your arguments
     },
     /// 写块回复消息
-    WriteBlockReplyMsg,
+    WriteBlockReplyMsg{
+		// Lab4 TODO: fill in your arguments
+	},
     /// 获取块设备大小
     GetBlockCapacity,
     /// 获取块设备大小回复消息, 单位 BLOCK_SIZE

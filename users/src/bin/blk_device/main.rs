@@ -23,7 +23,6 @@ extern crate alloc;
 pub const VIRTIO0_PADDR: usize = 0x10008000;
 
 static BLK_DEVICE: Lazy<Mutex<VirtIOBlk<HalImpl, MmioTransport>>> = Lazy::new(|| {
-    // TODO: improve security through map attrs
     // 映射物理内存
     let device_vaddr =
         map_paddr(VIRTIO0_PADDR, PAGE_SIZE).expect("can't map virtual address for virtio-blk");
@@ -98,7 +97,6 @@ fn main() {
     init(Some("debug"));
     let mut message = Message::blank();
 
-    // TODO: Fix virtio block
     // init_virtio_blk();
 
     println!("register blk_device service!");

@@ -126,7 +126,6 @@ pub fn ip_recv_any(message: &mut Message) -> isize {
             // 如果是通知消息，则可能是消息集合
             // 写入 PENDING_NOTIFICATIONS，然后单个处理
             MessageContent::NotifyField { notications } => {
-                // TODO: Check src is from kernel, if not print warning and ignore it.
                 *PENDING_NOTIFICATIONS.lock() |= notications;
                 return recv_notification_as_message(message);
             }
@@ -379,50 +378,14 @@ pub fn get_block_capacity(task_id: usize) -> Option<usize> {
 
 /// 读取块设备，block_index 是需要读取的块设备地址，buffer 是读取后的数据存放的缓冲区
 pub fn block_read(task_id: usize, block_index: usize, buf: &mut [u8]) -> Option<()> {
-    let mut message = Message::blank();
-
-    // 设置需要读取的块索引和数据存储地址
-    message.content = MessageContent::ReadBlockMsg { block_index };
-
-    let ret = ipc_call(task_id, &mut message);
-    // 判断读取是否成功
-    match ret >= 0 {
-        true => {
-            // 判断返回的消息是否正确
-            if let MessageContent::ReadBlockReplyMsg { buffer } = message.content {
-                buf.copy_from_slice(&buffer);
-                Some(())
-            } else {
-                None
-            }
-        }
-        false => None,
-    }
+	// Lab4 TODO
+	None
 }
 
 /// 写入块设备，block_index 是需要写入的块设备地址，buufer 是需要写入的数据
 pub fn block_write(task_id: usize, block_index: usize, buf: &mut [u8]) -> Option<()> {
-    let mut message = Message::blank();
-
-    // 设置需要读取的块索引和数据存储地址
-    message.content = MessageContent::WriteBlockMsg {
-        block_index,
-        buffer: buf.try_into().unwrap(),
-    };
-
-    let ret = ipc_call(task_id, &mut message);
-    // 判断读取是否成功
-    match ret >= 0 {
-        true => {
-            // 判断返回的消息是否正确
-            if let MessageContent::WriteBlockReplyMsg = message.content {
-                Some(())
-            } else {
-                None
-            }
-        }
-        false => None,
-    }
+	// Lab4 TODO
+	None
 }
 
 /// 读取文件夹
@@ -457,4 +420,9 @@ pub fn translate_vaddr(vaddr: usize) -> Option<usize> {
         true => Some(ret as usize),
         false => None,
     }
+}
+
+/// 统计系统调用次数
+pub fn count_syscall(syscall_id: usize) -> Option<usize>{
+	Some(syscall(SysCall::CountSysCall.into(), [syscall_id,0,0,0]) as usize)
 }

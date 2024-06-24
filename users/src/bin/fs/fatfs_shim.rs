@@ -59,7 +59,6 @@ impl fatfs::Read for DiskCursor {
     }
 }
 
-// TODO: implement write function
 impl fatfs::Write for DiskCursor {
     fn write(&mut self, buf: &[u8]) -> Result<usize, Self::Error> {
         // 由于写入扇区还需要考虑申请 cluster，因此 write 函数只写入一个扇区

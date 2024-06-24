@@ -57,15 +57,6 @@ fn main() {
                     };
                     ipc_reply(message.source, &mut message);
                 };
-                // TODO: use path instead of fixed root path
-                // let mut path = get_string_from_slice(&path).trim().to_string();
-                // let dir = match fs.root_dir().open_dir("/") {
-                //     Ok(dir) => dir,
-                //     Err(_) => {
-                //         reply(None);
-                //         continue;
-                //     }
-                // };
                 // 遍历文件夹
                 let dir = fs.root_dir();
                 match dir.iter().skip(index).next() {

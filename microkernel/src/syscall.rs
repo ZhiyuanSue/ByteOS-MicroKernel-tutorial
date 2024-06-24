@@ -406,6 +406,7 @@ impl MicroKernelTask {
             SysCall::Shutdown => self.sys_shutdown(),
             // 翻译虚拟地址
             SysCall::TransVAddr => self.sys_trans_paddr(args[0]),
+			SysCall::CountSysCall => todo!(),
         }
     }
 }

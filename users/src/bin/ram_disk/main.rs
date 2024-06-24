@@ -79,25 +79,15 @@ fn main() {
                 );
                 ipc_reply(message.source, &mut message);
             }
+			// Lab4 TODO
             // 读取块设备
-            MessageContent::ReadBlockMsg { block_index } => {
-                let mut buffer = vec![0; BLOCK_SIZE];
-                RamDiskImpl::read_block(block_index, &mut buffer);
-                message.content = MessageContent::ReadBlockReplyMsg {
-                    buffer: buffer.try_into().unwrap(),
-                };
-                ipc_reply(message.source, &mut message);
+            MessageContent::ReadBlockMsg {  } => {
+                
             }
             // 写入块设备
-            MessageContent::WriteBlockMsg {
-                block_index,
-                buffer,
-            } => {
-                RamDiskImpl::write_block(block_index, &buffer);
-                message.content = MessageContent::WriteBlockReplyMsg;
-                ipc_reply(message.source, &mut message);
+            MessageContent::WriteBlockMsg {  } => {
+                
             }
-            // MessageContent::BlkWriteReplyMsg()
             // Doing Nothing here.
             MessageContent::PageFaultReply => {}
             _ => println!("unhandled message: {:?}", message.content),
