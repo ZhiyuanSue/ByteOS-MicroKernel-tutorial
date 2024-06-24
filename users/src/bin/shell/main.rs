@@ -20,43 +20,6 @@ const DL: u8 = b'\x7f';
 const BS: u8 = b'\x08';
 const SPACE: u8 = b' ';
 
-/// 读取一行数据
-fn read_line() -> String {
-    let mut tmp = [0u8; 32];
-    let mut buffer = Vec::new();
-    loop {
-        let len = serial_read(&mut tmp);
-        if len == 0 {
-            continue;
-        }
-
-        assert_eq!(len, 1, "len should be 1, tip me if not");
-
-        for i in 0..len {
-            match tmp[i] as u8 {
-                // 如果是换行符
-                CR | LF => {
-                    print!("\n");
-                    return String::from_utf8(buffer).expect("This is not a valid utf8 string");
-                }
-                // 如果是退格符
-                BS | DL => {
-                    if buffer.len() > 0 {
-                        buffer.pop();
-                        serial_write(&[BS, SPACE, BS]);
-                    }
-                }
-                // 特殊字符
-                0..30 => {}
-                // 其他字符
-                _ => {
-                    buffer.push(tmp[i] as u8);
-                    serial_write(&tmp[i..i + 1]);
-                }
-            }
-        }
-    }
-}
 
 #[no_mangle]
 fn main() {
