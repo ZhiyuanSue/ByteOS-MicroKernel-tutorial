@@ -34,14 +34,12 @@ fn main() {
 
 	// Ping-Pong 命令，测试 IPC 和服务
 	{
-		println!("start test ping pong!");
 		if let Some(task_pong_id) = service_lookup("pong") {
 			message.content = MessageContent::PingMsg(321);
 			println!("Send ping message {} to vm server", 321);
 			ipc_call(task_pong_id, &mut message);
 			println!("Ping message reply {:?}", message.content);
 		}
-		println!("end test ping pong!");
 	}
 	// 输出帮助信息
 	{

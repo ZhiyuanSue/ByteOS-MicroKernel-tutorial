@@ -250,7 +250,7 @@ impl MicroKernelTask {
         if flags.contains(IPCFlags::KERNEL) {
             return Err(SysCallError::InvalidArg);
         }
-		
+
         // 确保拥有一个有效的 IPC 请求。
         if src != IPC_ANY && tid2task(src).is_none() {
             return Err(SysCallError::InvalidArg);
@@ -305,6 +305,7 @@ impl MicroKernelTask {
     }
 
     /// 映射虚拟内存
+    /// TODO: use flags to control page privilege
     pub fn sys_vm_map(&self, dst: usize, uaddr: usize, paddr: usize, _flags: usize) -> SysResult {
         // 如果需要申请页表的任务就是当前任务
         // 直接处理
