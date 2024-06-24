@@ -82,10 +82,10 @@ build:
 run: build
 	time $(QEMU_EXEC)
 
-user:
-	cd users && make TARGET=$(TARGET)
+# Lab1: TODO
+# 增加对于Users目录的编译命令，让他可以编译user文件夹下的内容
 
-run-user: user 
+run-user: 
 	make build
 	time $(QEMU_EXEC)
 
@@ -113,4 +113,4 @@ fmt:
 	cargo fmt
 	cd users && cargo fmt
 
-.PHONY: all run build clean gdb justbuild user run-user fmt
+.PHONY: all run build clean gdb justbuild run-user fmt
