@@ -47,7 +47,6 @@ pub async fn handle_page_fault(vaddr: VirtAddr, task: &MicroKernelTask) {
     }
 }
 
-// TODO: Check object cross more pages.
 #[allow(dead_code)]
 impl<T> UserBuffer<T> {
     #[inline]

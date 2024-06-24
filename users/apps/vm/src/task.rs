@@ -39,18 +39,6 @@ global_asm!(
         bin_pong_start:
         .incbin "target/riscv64gc-unknown-none-elf/release/pong"
         bin_pong_end:
-
-        bin_blk_device_start:
-        .incbin "target/riscv64gc-unknown-none-elf/release/blk_device"
-        bin_blk_device_end:
-
-        bin_ram_disk_start:
-        .incbin "target/riscv64gc-unknown-none-elf/release/ram_disk"
-        bin_ram_disk_end:
-
-        bin_fs_start:
-        .incbin "target/riscv64gc-unknown-none-elf/release/fs"
-        bin_fs_end:
     "#,
 );
 
@@ -67,18 +55,6 @@ global_asm!(
         bin_pong_start:
         .incbin "target/aarch64-unknown-none-softfloat/release/pong"
         bin_pong_end:
-
-        bin_blk_device_start:
-        .incbin "target/aarch64-unknown-none-softfloat/release/blk_device"
-        bin_blk_device_end:
-
-        bin_ram_disk_start:
-        .incbin "target/aarch64-unknown-none-softfloat/release/ram_disk"
-        bin_ram_disk_end:
-
-        bin_fs_start:
-        .incbin "target/aarch64-unknown-none-softfloat/release/fs"
-        bin_fs_end:
     "#,
 );
 
@@ -95,18 +71,6 @@ global_asm!(
         bin_pong_start:
         .incbin "target/x86_64-unknown-none/release/pong"
         bin_pong_end:
-
-        bin_blk_device_start:
-        .incbin "target/x86_64-unknown-none/release/blk_device"
-        bin_blk_device_end:
-
-        bin_ram_disk_start:
-        .incbin "target/x86_64-unknown-none/release/ram_disk"
-        bin_ram_disk_end:
-
-        bin_fs_start:
-        .incbin "target/x86_64-unknown-none/release/fs"
-        bin_fs_end:
     "#,
 );
 
@@ -123,18 +87,6 @@ global_asm!(
         bin_pong_start:
         .incbin "target/loongarch64-unknown-none/release/pong"
         bin_pong_end:
-
-        bin_blk_device_start:
-        .incbin "target/loongarch64-unknown-none/release/blk_device"
-        bin_blk_device_end:
-
-        bin_ram_disk_start:
-        .incbin "target/loongarch64-unknown-none/release/ram_disk"
-        bin_ram_disk_end:
-
-        bin_fs_start:
-        .incbin "target/loongarch64-unknown-none/release/fs"
-        bin_fs_end:
     "#,
 );
 
@@ -164,18 +116,9 @@ static SERVERS_BIN: Lazy<Vec<(&str, &[u8])>> = Lazy::new(|| {
         fn bin_shell_end();
         fn bin_pong_start();
         fn bin_pong_end();
-        fn bin_blk_device_start();
-        fn bin_blk_device_end();
-        fn bin_ram_disk_start();
-        fn bin_ram_disk_end();
-        fn bin_fs_start();
-        fn bin_fs_end();
     }
     include_app!(container, shell);
     include_app!(container, pong);
-    include_app!(container, blk_device);
-    include_app!(container, ram_disk);
-    include_app!(container, fs);
     container
 });
 
@@ -259,7 +202,6 @@ impl Task {
             // 取消映射临时内存
             sys_vm_unmap(task_self(), tmp_page_addr());
 
-            // TODO: use attrs to control privilege
             sys_vm_map(task_self(), tmp_page_addr(), paddr, 0);
 
             // 复制文件内容到 buffer 中
@@ -300,6 +242,7 @@ pub fn register_service(tid: usize, name: String) {
         if x.waiting_for == name {
             x.waiting_for = String::new();
             let mut message = Message::blank();
+			message.source = tid;
             message.content = MessageContent::ServiceLookupReplyMsg(x.tid);
             ipc_reply(message.source, &mut message);
         }

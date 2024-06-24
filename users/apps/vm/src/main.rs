@@ -117,7 +117,6 @@ fn main() {
                     .find(|x| x.tid == message.source)
                     .is_some());
 
-                // TODO: use mapping attrs to improve security
                 let ret = sys_pm_alloc(message.source, size, 0);
 
                 // 如果申请失败，直接跳过了
