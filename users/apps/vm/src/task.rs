@@ -10,86 +10,6 @@ use users::{
 };
 use xmas_elf::{program::Type, ElfFile};
 
-/// 引入 app 的 elf 文件
-macro_rules! include_app {
-    ($container:expr, $t:ident) => {
-        $container.push((stringify!($t), {
-            unsafe {
-                core::slice::from_raw_parts(
-                    concat_idents!(bin_, $t, _start) as *const u8,
-                    concat_idents!(bin_, $t, _end) as usize
-                        - concat_idents!(bin_, $t, _start) as usize,
-                )
-            }
-        }))
-    };
-}
-
-// 引入 elf 文件并且设置对齐
-#[cfg(target_arch = "riscv64")]
-global_asm!(
-    r#"
-        .p2align 12
-        .global bin_shell_start
-        .global bin_shell_end
-        bin_shell_start:
-        .incbin "target/riscv64gc-unknown-none-elf/release/shell"
-        bin_shell_end:
-
-        bin_pong_start:
-        .incbin "target/riscv64gc-unknown-none-elf/release/pong"
-        bin_pong_end:
-    "#,
-);
-
-#[cfg(target_arch = "aarch64")]
-global_asm!(
-    r#"
-        .p2align 12
-        .global bin_shell_start
-        .global bin_shell_end
-        bin_shell_start:
-        .incbin "target/aarch64-unknown-none-softfloat/release/shell"
-        bin_shell_end:
-
-        bin_pong_start:
-        .incbin "target/aarch64-unknown-none-softfloat/release/pong"
-        bin_pong_end:
-    "#,
-);
-
-#[cfg(target_arch = "x86_64")]
-global_asm!(
-    r#"
-        .p2align 12
-        .global bin_shell_start
-        .global bin_shell_end
-        bin_shell_start:
-        .incbin "target/x86_64-unknown-none/release/shell"
-        bin_shell_end:
-
-        bin_pong_start:
-        .incbin "target/x86_64-unknown-none/release/pong"
-        bin_pong_end:
-    "#,
-);
-
-#[cfg(target_arch = "loongarch64")]
-global_asm!(
-    r#"
-        .p2align 12
-        .global bin_shell_start
-        .global bin_shell_end
-        bin_shell_start:
-        .incbin "target/loongarch64-unknown-none/release/shell"
-        bin_shell_end:
-
-        bin_pong_start:
-        .incbin "target/loongarch64-unknown-none/release/pong"
-        bin_pong_end:
-    "#,
-);
-
 /// 临时页表，占位，为了方便处理
 #[link_section = ".bss.page_data"]
 static mut TMP_PAGE: [u8; PAGE_SIZE] = [0u8; PAGE_SIZE];
@@ -109,16 +29,6 @@ pub fn tmp_page_buffer() -> &'static mut [u8] {
 /// 引入所有 elf 文件的 bin 文件
 static SERVERS_BIN: Lazy<Vec<(&str, &[u8])>> = Lazy::new(|| {
     let mut container = Vec::new();
-    // extern_apps!(shell);
-
-    extern "C" {
-        fn bin_shell_start();
-        fn bin_shell_end();
-        fn bin_pong_start();
-        fn bin_pong_end();
-    }
-    include_app!(container, shell);
-    include_app!(container, pong);
     container
 });
 
