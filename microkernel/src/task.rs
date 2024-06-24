@@ -198,49 +198,23 @@ pub fn add_root_server() {
         // 当前段需要的页表数量
         let pages = (x.mem_size() as usize + PAGE_SIZE - 1) / PAGE_SIZE;
 
-        // 映射当前内存
-        for i in 0..pages {
-            root_server.page_table.map_page(
-                vpn + i,
-                ppn + i,
-                MappingFlags::URWX,
-                MappingSize::Page4KB,
-            );
-        }
+		// Lab2 TODO
+        // 映射当前ELF段内存
     });
 
+	// Lab2 TODO
     // 申请新的栈页表, 4KB * 20 = 800KB
-    for i in 0..USER_STACK_PAGES {
-        let page = frame_alloc(1);
-        assert!(
-            page.len() > 0,
-            "can't allocate page for root server at boot stage."
-        );
-
-        // 获取栈地址
-        let stack_addr = VirtPage::from_addr(USER_STACK_TOP_ADDR - i * PAGE_SIZE);
-
-        // 映射栈内存
-        root_server.page_table.map_page(
-            stack_addr,
-            page[0].0,
-            MappingFlags::URWX,
-            MappingSize::Page4KB,
-        );
-        root_server.pages.lock().extend(page);
-    }
     info!(
         "Root server entry point: {:#x}",
         elf_header.header.pt2.entry_point()
     );
 
+	// Lab2 TODO
     // 设置 ROOT_SERVER 的中断上下文，包括入口和栈
-    root_server.trap_frame[TrapFrameArgs::SEPC] = elf_header.header.pt2.entry_point() as _;
-    root_server.trap_frame[TrapFrameArgs::SP] = USER_STACK_TOP_ADDR;
 
+	// Lab2 TODO
     // 将 ROOT_SERVER 加入到调度器中
-    let root_server = Arc::new(root_server);
-    spawn(root_server.clone(), root_server.run())
+
 }
 
 impl MicroKernelTask {
@@ -267,35 +241,17 @@ impl MicroKernelTask {
             fault: Mutex::new(None),
         };
 
+		// Lab2 TODO
         // 设置任务上下文
-        new_task.trap_frame[TrapFrameArgs::SEPC] = entry_point;
-        new_task.trap_frame[TrapFrameArgs::SP] = USER_STACK_TOP_ADDR;
 
         // 申请新的栈页表, 4KB * 20 = 800KB
-        for i in 0..USER_STACK_PAGES {
-            let page = frame_alloc(1);
-            assert!(
-                page.len() > 0,
-                "can't allocate page for root server at boot stage."
-            );
-            // 获取栈地址
-            let stack_addr = VirtPage::from_addr(USER_STACK_TOP_ADDR - i * PAGE_SIZE);
-            // 映射栈内存
-            new_task.page_table.map_page(
-                stack_addr,
-                page[0].0,
-                MappingFlags::URWX,
-                MappingSize::Page4KB,
-            );
-            new_task.pages.lock().extend(page);
-        }
 
         // 将新的任务加入到调度器中
-        let new_task = Arc::new(new_task);
+
         // 恢复当前任务的运行状态
-        new_task.resume();
-        // 将任务加入到任务队列中
-        spawn(new_task.clone(), new_task.run());
+		
+        // // 将任务加入到任务队列中
+		
         new_tid
     }
 
