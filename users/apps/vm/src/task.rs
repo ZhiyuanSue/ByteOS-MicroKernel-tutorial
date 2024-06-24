@@ -242,7 +242,7 @@ pub fn register_service(tid: usize, name: String) {
         if x.waiting_for == name {
             x.waiting_for = String::new();
             let mut message = Message::blank();
-			message.source = tid;
+			message.source = x.tid;
             message.content = MessageContent::ServiceLookupReplyMsg(x.tid);
             ipc_reply(message.source, &mut message);
         }
